@@ -5,9 +5,17 @@
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
+    "start:prod": "pm2 start src/index.js --name productapi --env production",
+    "stop:prod": "pm2 stop productapi",
+    "restart:prod": "pm2 restart productapi",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": ["api", "mysql", "nodejs", "express"],
+  "keywords": [
+    "api",
+    "mysql",
+    "nodejs",
+    "express"
+  ],
   "author": "Tu Nombre",
   "license": "ISC",
   "description": "API para interactuar con una base de datos MySQL usando Node.js y Express",
@@ -16,6 +24,7 @@
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.21.1",
-    "mysql": "^2.18.1"
+    "mysql": "^2.18.1",
+    "pm2": "^5.3.0"
   }
 }

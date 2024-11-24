@@ -6,6 +6,7 @@ import bodyParser from 'body-parser';
 
 dotenv.config();
 
+// Configuración de la conexión a la base de datos
 const db = mysql.createConnection({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
@@ -13,20 +14,44 @@ const db = mysql.createConnection({
   database: process.env.DB_NAME
 });
 
-db.connect((err) => {
-  if (err) {
-    console.error('Error al conectar a la base de datos:', err);
-    return;
-  }
-  console.log('Conexión exitosa a la base de datos MySQL');
-});
+// Función para manejar reconexión a la base de datos
+function handleDisconnect() {
+  db.connect((err) => {
+    if (err) {
+      console.error('Error al conectar a la base de datos:', err);
+      setTimeout(handleDisconnect, 2000); // Reintenta después de 2 segundos
+    } else {
+      console.log('Conexión exitosa a la base de datos MySQL');
+    }
+  });
+
+  db.on('error', (err) => {
+    console.error('Error en la conexión:', err);
+    if (err.code === 'PROTOCOL_CONNECTION_LOST') {
+      handleDisconnect(); // Reconexión automática en caso de desconexión
+    } else {
+      throw err;
+    }
+  });
+}
+
+// Llamada inicial para conectar
+handleDisconnect();
 
 const app = express();
-app.use(cors());
+const PORT = process.env.PORT || 3001;
+
+const corsOptions = {
+  origin: process.env.CORS_ORIGIN,
+  optionsSuccessStatus: 200,
+};
+
+app.use(cors(corsOptions));
 app.use(bodyParser.json());
 
+// Ruta para obtener productos
 app.get('/api/productos', (req, res) => {
-  const query = 'SELECT * FROM products'; 
+  const query = 'SELECT * FROM products'; // Cambia según tu tabla
   db.query(query, (err, results) => {
     if (err) {
       console.error('Error en la consulta:', err);
@@ -37,7 +62,7 @@ app.get('/api/productos', (req, res) => {
   });
 });
 
-const PORT = 3001;
+// Servidor escuchando
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });
