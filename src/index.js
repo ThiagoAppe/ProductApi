@@ -6,7 +6,6 @@ import bodyParser from 'body-parser';
 
 dotenv.config();
 
-// Configuración de la conexión a la base de datos
 const db = mysql.createConnection({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
@@ -14,7 +13,6 @@ const db = mysql.createConnection({
   database: process.env.DB_NAME
 });
 
-// Función para manejar reconexión a la base de datos
 function handleDisconnect() {
   db.connect((err) => {
     if (err) {
@@ -28,30 +26,41 @@ function handleDisconnect() {
   db.on('error', (err) => {
     console.error('Error en la conexión:', err);
     if (err.code === 'PROTOCOL_CONNECTION_LOST') {
-      handleDisconnect(); // Reconexión automática en caso de desconexión
+      handleDisconnect();
     } else {
       throw err;
     }
   });
 }
 
-// Llamada inicial para conectar
 handleDisconnect();
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+// Configuración de CORS
 const corsOptions = {
-  origin: process.env.CORS_ORIGIN,
-  optionsSuccessStatus: 200,
+  origin: (origin, callback) => {
+    console.log('Origen de la solicitud:', origin); // Para depuración
+    if (origin === process.env.CORS_ORIGIN || !origin) {
+      callback(null, true);  // Permite la solicitud
+    } else {
+      console.error('Solicitud bloqueada por CORS desde:', origin); // Para depuración
+      callback(new Error('No permitido por CORS'));  // Bloquea la solicitud
+    }
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE'], // Métodos permitidos
+  allowedHeaders: ['Content-Type', 'Authorization'], // Encabezados permitidos
+  optionsSuccessStatus: 200, // Para compatibilidad con IE11 y otros navegadores antiguos
 };
 
+// Asegúrate de usar CORS antes de las rutas
 app.use(cors(corsOptions));
+
 app.use(bodyParser.json());
 
-// Ruta para obtener productos
-app.get('/api/productos', (req, res) => {
-  const query = 'SELECT * FROM products'; // Cambia según tu tabla
+app.get('/api/products', (req, res) => {
+  const query = 'SELECT * FROM products';
   db.query(query, (err, results) => {
     if (err) {
       console.error('Error en la consulta:', err);
@@ -62,7 +71,6 @@ app.get('/api/productos', (req, res) => {
   });
 });
 
-// Servidor escuchando
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });

@@ -8,7 +8,8 @@
     "start:prod": "pm2 start src/index.js --name productapi --env production",
     "stop:prod": "pm2 stop productapi",
     "restart:prod": "pm2 restart productapi",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon index.js"
   },
   "keywords": [
     "api",
@@ -26,5 +27,8 @@
     "express": "^4.21.1",
     "mysql": "^2.18.1",
     "pm2": "^5.3.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.7"
   }
 }
